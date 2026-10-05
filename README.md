@@ -131,6 +131,21 @@ that leg is fully productisable today.
 - `POST /checkLogin` returns HTTP 200 while logged out (`login.unlogin`). Never judge auth
   from a status code.
 
+## Verification
+
+```bash
+V=~/.hermes/profiles/manager/skills/software-development/documentation-set-authoring/scripts/verify_markdown_docs.py
+python3 $V . --ext .md --tokens "Calculated Price,Shipping Estimate,input#uploadFile,My Account,Detected"
+# -> PROBLEMS: 0, RESULT: CLEAN
+~/venvs/pw/bin/python -m pytest tests/ -q   # -> 22 passed
+```
+
+**Scope the docs checker to `.md`.** Scanning `.txt` drags in
+`tests/fixtures/quote_v8i_real.txt`, which is a *verbatim capture* of a JLCPCB
+page. The checker reports trailing whitespace in it, and that whitespace must
+**not** be stripped — sanitising a capture destroys the evidence it exists to
+provide. Capture files are exempt from prose hygiene rules.
+
 ## UNVERIFIED
 
 - **Whether JLCPCB permits automated ordering under its ToS.** Not checked. Must be
