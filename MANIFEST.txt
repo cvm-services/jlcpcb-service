@@ -1,0 +1,6 @@
+docs/01-INTEGRATION-RUNBOOK.md   Every step, cookie, selector, endpoint and trap required to reproduce the integration by hand
+docs/02-ARCHITECTURE.md          Pipeline stages, MCP tool contracts, CVM announcement and payment design
+docs/03-TOOLCHAIN.md             Best tool per stage, with the rejected alternative and why
+docs/04-AUTOMATION-PLAN.md       Phased build plan with observable gates, estimates and risks
+README.md                        Problem, proven results, the three honest blockers, service shape
+MANIFEST.txt                     This file
