@@ -1,0 +1,19 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "jlcpcb-client"
+version = "0.1.0"
+description = "JLCPCB quote client — drive the cart quote page over CDP"
+requires-python = ">=3.10"
+dependencies = ["playwright>=1.40"]
+
+[project.optional-dependencies]
+test = ["pytest>=8"]
+
+[tool.setuptools.packages.find]
+include = ["jlcpcb_client*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

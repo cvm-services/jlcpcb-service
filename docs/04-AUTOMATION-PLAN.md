@@ -20,19 +20,24 @@ Deliverable: this doc set.
 Gate: every command in `01-INTEGRATION-RUNBOOK.md` was taken from the working manual run;
 all traps are recorded. **Passed.**
 
-### Phase 1 — Extract a reusable, tested client library
+### Phase 1 — Extract a reusable, tested client library (DONE)
 
-Deliverable: `jlcpcb_client/` — a Python package wrapping login-session health check,
-gerber upload, and quote extraction. Selectors confined to one module. Config via env
-vars; no credentials in code.
+Deliverable: `jlcpcb_client/` — session health check, gerber upload, quote
+extraction, BOM/CPL transforms. Selectors confined to `selectors.py`.
 
-Gate:
-- `jlcpcb_client quote path/to/known.zip` returns the **same numbers** the manual run
-  produced for v8i ($4.00 PCB, $23.21 DHL, 4-layer 45×55 mm).
-- Unit tests for BOM/CPL transforms; no network needed, no secrets in the repo.
-- A failed extraction raises rather than returns a partial price.
+Gate (**passed**, evidence in `README.md`): `jlcpcb-client quote` on the v8i zip
+returns **$4.00 PCB / $23.21 DHL / 4 layers / 45x55mm / 0.29 kg**, matching the
+manual run field for field. 22 unit tests pass with no network.
 
-Estimate: 1–2 days. Cost: no money; one JLCPCB upload.
+The gate did its job — it failed twice first, and both failures were real:
+
+- The parser read labels (`PCB Price`/`PCB Size`) that do not exist, and passed
+  because the fixture had been hand-written to match. Replaced with a verbatim
+  capture; the parser now reads `Calculated Price`/`Shipping Estimate`.
+- Price renders mid-upload, so waiting on it alone produced `layers=None`. The
+  render criterion now requires the `Detected … board` sentence.
+
+Estimate: 1–2 days. Actual: ~1 session. Cost: 3 JLCPCB uploads.
 
 ### Phase 2 — DFM preflight (no account, no session)
 

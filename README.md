@@ -22,6 +22,62 @@ needing a JLCPCB account, and without a human driving a browser.
 
 Full detail: [`docs/01-INTEGRATION-RUNBOOK.md`](docs/01-INTEGRATION-RUNBOOK.md).
 
+## Client (Phase 1 — DONE)
+
+The quoting library works and reproduces the manual run exactly.
+
+```bash
+python3 -m venv ~/venvs/pw && ~/venvs/pw/bin/pip install -e '.[test]'
+
+# is the Chrome profile still authenticated?
+JLC_PROFILE=~/.hermes/profiles/manager/state/jlc-browser9 \
+  ~/venvs/pw/bin/python -m jlcpcb_client.cli session
+# -> session OK
+
+# quote a gerber zip (read-only — never places an order)
+DISPLAY=:99 JLC_PROFILE=~/.hermes/profiles/manager/state/jlc-browser9 \
+  ~/venvs/pw/bin/python -m jlcpcb_client.cli quote BOARD.zip \
+  --snapshot ./snapshots --json
+```
+
+Gate evidence — the v8i board, quoted through the library, matching the manual run:
+
+```text
+PCB price : $4.00      (manual: $4.00)
+Shipping  : $23.21     (manual: $23.21)
+Qty       : 5          (manual: 5)
+Layers    : 4          (manual: 4)
+Size      : 45x55mm    (manual: 45x55mm)
+Weight    : 0.29 kg    (manual: 0.29 kg)
+```
+
+22 tests pass, no network required for the pure parsers. The parsing tests run
+against a **verbatim capture** of a real quote page
+(`tests/fixtures/quote_v8i_real.txt`), not a hand-written fixture.
+
+### Three traps the build exposed
+
+1. **The price labels are `Calculated Price` / `Shipping Estimate`.** An earlier
+   version looked for `PCB Price` / `PCB Size`, which JLCPCB never renders. The
+   tests passed anyway, because the fixture had been hand-written to match the
+   parser — a suite agreeing with its own fiction. Fixed by capturing the page.
+2. **Price and shipping render *during* upload.** At `Uploading your files....
+   74%` the page already shows `Calculated Price` and `Shipping Estimate` but
+   not the parsed board. Waiting on price alone yields a quote with
+   `layers=None`. The render criterion therefore requires the
+   `Detected N layer board of WxHmm` sentence.
+3. **`Weight` is ambiguous.** The page contains `Outer Copper Weight` and
+   `Inner Copper Weight` *before* the board weight, so a label search returns
+   the wrong value. Weight is anchored on the `kg` unit instead.
+
+### Quotes depend on live board options
+
+The same board quoted at `$8.00` / `0.17 kg` in one run and `$4.00` /
+`0.29 kg` in another, because the page carries whatever options are currently
+selected (surface finish, via covering, build time). A quote is only meaningful
+together with the options it was taken under — pinning those as explicit inputs
+is part of Phase 3, not something to assume.
+
 ## The three honest blockers to productising this
 
 1. **LCSC part numbers do not exist in typical designs.** The v8i KiCad source has
